@@ -1,39 +1,40 @@
 
 Bilag 5: Arduino kode til patientsimualtor
 
+// Arduino program til Analog-Digital konvertering ved brug af TimerOne
+
 #include <SPI.h>
 #include <TimerOne.h>
 
-const int CSPin = 10; // Definerer Arduino pin 10 som CS (Control Select)
-const unsigned long samplingTime = 2000; // Samplingstid i mikrosekunder
+const int CSPin = 10; // Definerer Pin nr. 10 på Arduino som Control Select (CS)
+const unsigned long samplingTime = 2000; // Samplingstiden givet i enheden mikrosekunder
 
 SPISettings settings(8000000, MSBFIRST, SPI_MODE0);
 
 int getEKGADC() {
-    digitalWrite(CSPin, LOW); // Starter SPI overførsel
-    int result = SPI.transfer16(0x00); // Gennemfører SPI overførsel
-    digitalWrite(CSPin, HIGH); // Stopper SPI overførsel
-    return result; // Returnerer ADC-værdi som integer
-}
-void setup() {
-    Serial.begin(9600); // Starter den serielle kommunikation
-    SPI.begin(); // Starter SPI-forbindelsen
-    SPI.beginTransaction(settings); // Starter SPI overførsel med de angivet indstillinger
-    pinMode(CSPin, OUTPUT); // Sætter CS-pin som output
-    digitalWrite(CSPin, HIGH); // Sætter CS-pin høj som standard
-    
-    Timer1.initialize(samplingTime); // Initialiserer TimerOne med samplingstiden
-    Timer1.attachInterrupt(measureAndSend); // Vedhæfter interrupt-funktionen
+    digitalWrite(CSPin, LOW); // SPI overførsel sættes igang
+    int result = SPI.transfer16(0x00); // SPI overførsel gennemføres
+    digitalWrite(CSPin, HIGH); // SPI overførsel stopper
+    return result; // Returnerer ADC-værdi som heltal (integer)
 }
 
-// Funktion der kaldes af timer interrupt
+void setup() {
+    Serial.begin(9600); // Den serielle kommunikation starter
+    SPI.begin(); // Starter SPI-forbindelsen
+    SPI.beginTransaction(settings); // Starter SPI overførsel med de før angivet indstillinger SPISettings
+    pinMode(CSPin, OUTPUT); // Control Select-pin tildeles som output
+    digitalWrite(CSPin, HIGH); // Control Select-pin høj som standard
+
+    Timer1.initialize(samplingTime); // Initialiserer TimerOne med samplingstiden
+    Timer1.attachInterrupt(measureAndSend); // Vedhæfter "Attacher" interrupt-funktionen
+}
+
 void measureAndSend() {
     int adcValue = getEKGADC(); // Henter ADC-værdi og få resultat
-    Serial.println(adcvalue); // Sender resultatet via serielt forbindelse
+    Serial.println(adcValue); // Sender værdien via serielt interface
 }
 
 void loop() {
-    // Skal være tom, da vi bruger TimerOne til at generere interrupts
+    // Efterlades bevidst tom da vi bruger TimerOne til at generere interrupts
 }
-
 
